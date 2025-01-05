@@ -1,0 +1,673 @@
+
+// File: c:\Users\Potatox\Desktop\app\src\utils\advanced-keys.ts
+const quantumRangesKeys = [
+  '_QK_MODS',
+  '_QK_MODS_MAX',
+  '_QK_MOD_TAP',
+  '_QK_MOD_TAP_MAX',
+  '_QK_LAYER_TAP',
+  '_QK_LAYER_TAP_MAX',
+  '_QK_LAYER_MOD',
+  '_QK_LAYER_MOD_MAX',
+  '_QK_TO',
+  '_QK_TO_MAX',
+  '_QK_MOMENTARY',
+  '_QK_MOMENTARY_MAX',
+  '_QK_DEF_LAYER',
+  '_QK_DEF_LAYER_MAX',
+  '_QK_TOGGLE_LAYER',
+  '_QK_TOGGLE_LAYER_MAX',
+  '_QK_ONE_SHOT_LAYER',
+  '_QK_ONE_SHOT_LAYER_MAX',
+  '_QK_ONE_SHOT_MOD',
+  '_QK_ONE_SHOT_MOD_MAX',
+  '_QK_LAYER_TAP_TOGGLE',
+  '_QK_LAYER_TAP_TOGGLE_MAX',
+  '_QK_KB',
+  '_QK_KB_MAX',
+  '_QK_MACRO',
+  '_QK_MACRO_MAX',
+];
+
+const quantumRanges = (
+  basicKeyToByte: Record<string, number>,
+): Record<string, number> => {
+  return Object.keys(basicKeyToByte).reduce(
+    (acc, key) =>
+      quantumRangesKeys.includes(key)
+        ? {...acc, [key]: basicKeyToByte[key]}
+        : acc,
+    {},
+  );
+};
+
+const modCodes = {
+  QK_LCTL: 0x0100,
+  QK_LSFT: 0x0200,
+  QK_LALT: 0x0400,
+  QK_LGUI: 0x0800,
+  QK_RMODS_MIN: 0x1000,
+  QK_RCTL: 0x1100,
+  QK_RSFT: 0x1200,
+  QK_RALT: 0x1400,
+  QK_RGUI: 0x1800,
+};
+
+const modMasks = {
+  MOD_LCTL: 0x0001,
+  MOD_LSFT: 0x0002,
+  MOD_LALT: 0x0004,
+  MOD_LGUI: 0x0008,
+  MOD_RCTL: 0x0011,
+  MOD_RSFT: 0x0012,
+  MOD_RALT: 0x0014,
+  MOD_RGUI: 0x0018,
+  MOD_HYPR: 0x000f,
+  MOD_MEH: 0x0007,
+};
+
+const topLevelMacroToValue = {
+  MT: '_QK_MOD_TAP', // MT(mod, kc)
+  LT: '_QK_LAYER_TAP', // LT(layer, kc)
+  LM: '_QK_LAYER_MOD', // LM(layer, mod)
+  TO: '_QK_TO', // TO(layer)
+  MO: '_QK_MOMENTARY', // MO(layer)
+  DF: '_QK_DEF_LAYER', //DF(layer)
+  TG: '_QK_TOGGLE_LAYER', //  TG(layer)
+  OSL: '_QK_ONE_SHOT_LAYER', // OSL(layer)
+  OSM: '_QK_ONE_SHOT_MOD', //OSM(mod)
+  TT: '_QK_LAYER_TAP_TOGGLE', // TT(layer)
+  CUSTOM: '_QK_KB', // CUSTOM(n)
+  MACRO: '_QK_MACRO', // MACRO(n)
+};
+
+const modifierKeyToValue = {
+  LCTL: modCodes.QK_LCTL,
+  C: modCodes.QK_LCTL,
+  LSFT: modCodes.QK_LSFT,
+  S: modCodes.QK_LSFT,
+  LALT: modCodes.QK_LALT,
+  A: modCodes.QK_LALT,
+  LGUI: modCodes.QK_LGUI,
+  LCMD: modCodes.QK_LGUI,
+  LWIN: modCodes.QK_LGUI,
+  G: modCodes.QK_LGUI,
+  RCTL: modCodes.QK_RCTL,
+  RSFT: modCodes.QK_RSFT,
+  ALGR: modCodes.QK_RALT,
+  RALT: modCodes.QK_RALT,
+  RCMD: modCodes.QK_RGUI,
+  RWIN: modCodes.QK_RGUI,
+  RGUI: modCodes.QK_RGUI,
+  SCMD: modCodes.QK_LSFT | modCodes.QK_LGUI,
+  SWIN: modCodes.QK_LSFT | modCodes.QK_LGUI,
+  SGUI: modCodes.QK_LSFT | modCodes.QK_LGUI,
+  LSG: modCodes.QK_LSFT | modCodes.QK_LGUI,
+  LAG: modCodes.QK_LALT | modCodes.QK_LGUI,
+  RSG: modCodes.QK_RSFT | modCodes.QK_RGUI,
+  RAG: modCodes.QK_RALT | modCodes.QK_RGUI,
+  LCA: modCodes.QK_LCTL | modCodes.QK_LALT,
+  LSA: modCodes.QK_LSFT | modCodes.QK_LALT,
+  SAGR: modCodes.QK_RSFT | modCodes.QK_RALT,
+  RSA: modCodes.QK_RSFT | modCodes.QK_RALT,
+  RCS: modCodes.QK_RCTL | modCodes.QK_RSFT,
+  LCAG: modCodes.QK_LCTL | modCodes.QK_LALT | modCodes.QK_LGUI,
+  MEH: modCodes.QK_LCTL | modCodes.QK_LALT | modCodes.QK_LSFT,
+  HYPR:
+    modCodes.QK_LCTL | modCodes.QK_LALT | modCodes.QK_LSFT | modCodes.QK_LGUI,
+};
+
+// All modifier combos
+const modifierValueToKey: Record<number, string> = Object.entries(
+  modifierKeyToValue,
+).reduce((acc, [key, value]) => ({...acc, [value]: key}), {});
+
+// Single left modifiers (as opposed to combos)
+const leftModifierValueToKey: Record<number, string> = Object.entries(
+  modifierKeyToValue,
+)
+  .filter(
+    ([_, value]) =>
+      Object.values(modCodes).includes(value) && value < modCodes.QK_RMODS_MIN,
+  )
+  .reduce((acc, [key, value]) => ({...acc, [value]: key}), {});
+
+// Single right modifiers (as opposed to combos)
+const rightModifierValueToKey: Record<number, string> = Object.entries(
+  modifierKeyToValue,
+)
+  .filter(
+    ([_, value]) =>
+      Object.values(modCodes).includes(value) && value >= modCodes.QK_RMODS_MIN,
+  )
+  .reduce((acc, [key, value]) => ({...acc, [value]: key}), {});
+
+const topLevelValueToMacro = (
+  basicKeyToByte: Record<string, number>,
+): Record<number, string> => {
+  return Object.entries(topLevelMacroToValue).reduce(
+    (acc, [key, value]) => ({...acc, [basicKeyToByte[value]]: key}),
+    {},
+  );
+};
+
+// MT, OSM, LM only take MOD
+// Everything else can use the KC mods
+// This is some brute forcey stuff, but it works.
+// If it returns 0, it means validation failed
+export const advancedStringToKeycode = (
+  inputString: string,
+  basicKeyToByte: Record<string, number>,
+): number => {
+  const upperString = inputString.toUpperCase();
+  const parts = upperString.split(/\(|\)/).map((part) => part.trim());
+  if (Object.keys(topLevelMacroToValue).includes(parts[0])) {
+    return parseTopLevelMacro(parts, basicKeyToByte);
+  } else if (Object.keys(modifierKeyToValue).includes(parts[0])) {
+    return parseModifierCode(parts, basicKeyToByte);
+  }
+  return 0;
+};
+
+export const advancedKeycodeToString = (
+  inputKeycode: number,
+  basicKeyToByte: Record<string, number>,
+  byteToKey: Record<number, string>,
+): string | null => {
+  let valueToRange: [number, string][] = Object.entries(
+    quantumRanges(basicKeyToByte),
+  ).map(([key, value]) => [value, key]);
+
+  /* Find the range we are in first */
+  let lastRange = null;
+  let lastValue: number = -1;
+  for (let i = 0; i < valueToRange.length; i += 2) {
+    if (
+      inputKeycode >= valueToRange[i][0] &&
+      inputKeycode <= valueToRange[i + 1][0]
+    ) {
+      lastRange = valueToRange[i][1];
+      lastValue = +valueToRange[i][0];
+    }
+  }
+
+  const topLevelModKeys = ['_QK_MODS'];
+  if (topLevelModKeys.includes(lastRange as string)) {
+    return topLevelModToString(inputKeycode, byteToKey);
+  }
+  let humanReadable: string | null =
+    (topLevelValueToMacro(basicKeyToByte) as any)[lastValue] + '(';
+  let remainder = inputKeycode & ~lastValue;
+  let layer = 0;
+  let keycode = '';
+  let modValue = 0;
+  switch (lastRange) {
+    case '_QK_KB':
+    case '_QK_MACRO':
+      humanReadable += inputKeycode - lastValue + ')';
+      break;
+    case '_QK_MOMENTARY':
+    case '_QK_DEF_LAYER':
+    case '_QK_TOGGLE_LAYER':
+    case '_QK_ONE_SHOT_LAYER':
+    case '_QK_LAYER_TAP_TOGGLE':
+    case '_QK_TO':
+      humanReadable += remainder + ')';
+      break;
+    case '_QK_LAYER_TAP':
+      layer = remainder >> 8;
+      keycode = byteToKey[remainder & 0xff];
+      humanReadable += layer + ',' + keycode + ')';
+      break;
+    case '_QK_ONE_SHOT_MOD':
+      humanReadable += modValueToString(remainder) + ')';
+      break;
+    case '_QK_LAYER_MOD':
+      let mask = basicKeyToByte._QK_LAYER_MOD_MASK;
+      let shift = Math.log2(mask + 1);
+      layer = remainder >> shift;
+      modValue = remainder & mask;
+      humanReadable += layer + ',' + modValueToString(modValue) + ')';
+      break;
+    case '_QK_MOD_TAP':
+      modValue = (remainder >> 8) & 0x1f;
+      keycode = byteToKey[remainder & 0xff];
+      humanReadable += modValueToString(modValue) + ',' + keycode + ')';
+      break;
+    default:
+      humanReadable = null;
+  }
+  return humanReadable;
+};
+
+const modValueToString = (modMask: number): string => {
+  const excluded = ['MOD_HYPR', 'MOD_MEH'];
+  const qualifyingStrings = Object.entries(modMasks)
+    .filter(
+      (part) => !excluded.includes(part[0]) && (part[1] & modMask) === part[1],
+    )
+    .map((part) => part[0]);
+  return qualifyingStrings.join(' | ');
+};
+
+const topLevelModToString = (
+  keycode: number,
+  byteToKey: Record<number, string>,
+): string => {
+  const containedKeycode = byteToKey[keycode & 0x00ff];
+  const modifierValue = keycode & 0x1f00;
+  // if we find an exact match (like HYPR or MEH or LAG), use that
+  const modifierKey = modifierValueToKey[modifierValue];
+  if (modifierKey != undefined) {
+    return modifierKey + '(' + containedKeycode + ')';
+  }
+
+  // Left and right mods are mutually exclusive.
+  // Test the bit which is common to all right mods,
+  // and generate the string from one of two lookups.
+  const enabledMods = Object.entries(
+    modifierValue & modCodes.QK_RMODS_MIN
+      ? rightModifierValueToKey
+      : leftModifierValueToKey,
+  )
+    .filter((part) => {
+      const current = Number.parseInt(part[0]);
+      return (current & modifierValue) === current;
+    })
+    .map((part) => part[1]);
+  return (
+    enabledMods.join('(') +
+    '(' +
+    containedKeycode +
+    ')'.repeat(enabledMods.length)
+  );
+};
+
+const parseTopLevelMacro = (
+  inputParts: string[],
+  basicKeyToByte: Record<string, number>,
+): number => {
+  const topLevelKey = inputParts[0];
+  const parameter = inputParts[1] ?? '';
+  let [param1, param2] = ['', ''];
+  let layer = 0;
+  let mods = 0;
+  switch (topLevelKey) {
+    case 'MO':
+    case 'DF':
+    case 'TG':
+    case 'OSL':
+    case 'TT':
+    case 'TO':
+      layer = Number.parseInt(parameter);
+      if (layer < 0) {
+        return 0;
+      }
+      return basicKeyToByte[topLevelMacroToValue[topLevelKey]] | (layer & 0xff);
+    case 'OSM': //#define OSM(mod) (QK_ONE_SHOT_MOD | ((mod)&0xFF))
+      mods = parseMods(parameter);
+      if (mods === 0) {
+        return 0;
+      }
+      return basicKeyToByte[topLevelMacroToValue[topLevelKey]] | (mods & 0xff);
+    case 'LM': //#define LM(layer, mod) (QK_LAYER_MOD | (((layer)&0xF) << 4) | ((mod)&0xF))
+      [param1, param2] = parameter.split(',').map((s) => s.trim());
+      let mask = basicKeyToByte._QK_LAYER_MOD_MASK;
+      let shift = Math.log2(mask + 1);
+      layer = Number.parseInt(param1);
+      mods = parseMods(param2);
+      if (layer < 0 || mods === 0) {
+        return 0;
+      }
+      return (
+        basicKeyToByte[topLevelMacroToValue[topLevelKey]] |
+        ((layer & 0xf) << shift) |
+        (mods & mask)
+      );
+    case 'LT': //#define LT(layer, kc) (QK_LAYER_TAP | (((layer)&0xF) << 8) | ((kc)&0xFF))
+      [param1, param2] = parameter.split(',').map((s) => s.trim());
+      layer = Number.parseInt(param1);
+      if (layer < 0 || !basicKeyToByte.hasOwnProperty(param2)) {
+        return 0;
+      }
+      return (
+        basicKeyToByte[topLevelMacroToValue[topLevelKey]] |
+        ((layer & 0xf) << 8) |
+        basicKeyToByte[param2]
+      );
+    case 'MT': // #define MT(mod, kc) (QK_MOD_TAP | (((mod)&0x1F) << 8) | ((kc)&0xFF))
+      [param1, param2] = parameter.split(',').map((s) => s.trim());
+      mods = parseMods(param1);
+      if (mods === 0 || !basicKeyToByte.hasOwnProperty(param2)) {
+        return 0;
+      }
+      return (
+        basicKeyToByte[topLevelMacroToValue[topLevelKey]] |
+        ((mods & 0x1f) << 8) |
+        (basicKeyToByte[param2] & 0xff)
+      );
+    case 'CUSTOM': {
+      const n = Number.parseInt(parameter);
+      const nMax = basicKeyToByte._QK_KB_MAX - basicKeyToByte._QK_KB;
+      if (n >= 0 && n <= nMax) {
+        return basicKeyToByte[topLevelMacroToValue[topLevelKey]] + n;
+      }
+      return 0;
+    }
+    case 'MACRO': {
+      const n = Number.parseInt(parameter);
+      const nMax = basicKeyToByte._QK_MACRO_MAX - basicKeyToByte._QK_MACRO;
+      if (n >= 0 && n <= nMax) {
+        return basicKeyToByte[topLevelMacroToValue[topLevelKey]] + n;
+      }
+      return 0;
+    }
+    default:
+      return 0;
+  }
+};
+
+const parseMods = (input: string = ''): number => {
+  const parts = input.split('|').map((s) => s.trim());
+  if (
+    !parts.reduce((acc, part) => acc && modMasks.hasOwnProperty(part), true)
+  ) {
+    return 0;
+  }
+  return parts.reduce(
+    (acc, part) => acc | modMasks[part as keyof typeof modMasks],
+    0,
+  );
+};
+
+const parseModifierCode = (
+  inputParts: string[],
+  basicKeyToByte: any,
+): number => {
+  const realParts = inputParts.filter((nonce) => nonce.length !== 0);
+  const bytes = realParts.map((part, idx) => {
+    if (idx === realParts.length - 1) {
+      /* this must be a KC code */
+      return basicKeyToByte.hasOwnProperty(part) ? basicKeyToByte[part] : null;
+    } else {
+      /* This must be a top level modifier */
+      return modifierKeyToValue.hasOwnProperty(part)
+        ? modifierKeyToValue[part as keyof typeof modifierKeyToValue]
+        : null;
+    }
+  });
+  if (bytes.find((e) => e === null)) {
+    return 0;
+  }
+  return bytes.reduce((acc, byte) => acc | byte, 0);
+};
+
+export const anyKeycodeToString = (
+  input: number,
+  basicKeyToByte: Record<string, number>,
+  byteToKey: Record<number, string>,
+) => {
+  let currentValue = '';
+  const advancedParsed = advancedKeycodeToString(
+    input,
+    basicKeyToByte,
+    byteToKey,
+  );
+  if (byteToKey[input] && !byteToKey[input].startsWith('_QK')) {
+    currentValue = byteToKey[input];
+  } else if (advancedParsed !== null) {
+    currentValue = advancedParsed;
+  }
+  return currentValue;
+};
+
+
+// File: c:\Users\Potatox\Desktop\app\src\utils\autocomplete-keycodes.ts
+import {keycodesList} from './key';
+const autocompleteKeycodes = {
+  KC_NO: true,
+  KC_A: true,
+  KC_B: true,
+  KC_C: true,
+  KC_D: true,
+  KC_E: true,
+  KC_F: true,
+  KC_G: true,
+  KC_H: true,
+  KC_I: true,
+  KC_J: true,
+  KC_K: true,
+  KC_L: true,
+  KC_M: true,
+  KC_N: true,
+  KC_O: true,
+  KC_P: true,
+  KC_Q: true,
+  KC_R: true,
+  KC_S: true,
+  KC_T: true,
+  KC_U: true,
+  KC_V: true,
+  KC_W: true,
+  KC_X: true,
+  KC_Y: true,
+  KC_Z: true,
+  KC_1: true,
+  KC_2: true,
+  KC_3: true,
+  KC_4: true,
+  KC_5: true,
+  KC_6: true,
+  KC_7: true,
+  KC_8: true,
+  KC_9: true,
+  KC_0: true,
+  KC_ENT: true,
+  KC_ESC: true,
+  KC_BSPC: true,
+  KC_TAB: true,
+  KC_SPC: true,
+  KC_MINS: true,
+  KC_EQL: true,
+  KC_LBRC: true,
+  KC_RBRC: true,
+  KC_BSLS: true,
+  KC_NUHS: true,
+  KC_SCLN: true,
+  KC_QUOT: true,
+  KC_GRV: true,
+  KC_COMM: true,
+  KC_DOT: true,
+  KC_SLSH: true,
+  KC_CAPS: true,
+  KC_F1: true,
+  KC_F2: true,
+  KC_F3: true,
+  KC_F4: true,
+  KC_F5: true,
+  KC_F6: true,
+  KC_F7: true,
+  KC_F8: true,
+  KC_F9: true,
+  KC_F10: true,
+  KC_F11: true,
+  KC_F12: true,
+  KC_PSCR: true,
+  KC_SLCK: true,
+  KC_PAUS: true,
+  KC_INS: true,
+  KC_HOME: true,
+  KC_PGUP: true,
+  KC_DEL: true,
+  KC_END: true,
+  KC_PGDN: true,
+  KC_RGHT: true,
+  KC_LEFT: true,
+  KC_DOWN: true,
+  KC_UP: true,
+  KC_NLCK: true,
+  KC_PSLS: true,
+  KC_KP_ASTERISK: true,
+  KC_PAST: true,
+  KC_PPLS: true,
+  KC_PMNS: true,
+  KC_PENT: true,
+  KC_P1: true,
+  KC_P2: true,
+  KC_P3: true,
+  KC_P4: true,
+  KC_P5: true,
+  KC_P6: true,
+  KC_P7: true,
+  KC_P8: true,
+  KC_P9: true,
+  KC_P0: true,
+  KC_PDOT: true,
+  KC_NUBS: true,
+  KC_APP: true,
+  KC_POWER: true,
+  KC_PEQL: true,
+  KC_F13: true,
+  KC_F14: true,
+  KC_F15: true,
+  KC_F16: true,
+  KC_F17: true,
+  KC_F18: true,
+  KC_F19: true,
+  KC_F20: true,
+  KC_F21: true,
+  KC_F22: true,
+  KC_F23: true,
+  KC_F24: true,
+  KC_EXECUTE: true,
+  KC_HELP: true,
+  KC_MENU: true,
+  KC_SELECT: true,
+  KC_STOP: true,
+  KC_AGAIN: true,
+  KC_UNDO: true,
+  KC_CUT: true,
+  KC_COPY: true,
+  KC_PASTE: true,
+  KC_FIND: true,
+  KC_LCAP: true,
+  KC_LNUM: true,
+  KC_LSCR: true,
+  KC_PCMM: true,
+  KC_KP_EQUAL_AS400: true,
+  KC_RO: true,
+  KC_KANA: true,
+  KC_JYEN: true,
+  KC_HENK: true,
+  KC_MHEN: true,
+  KC_INT6: true,
+  KC_INT7: true,
+  KC_INT8: true,
+  KC_INT9: true,
+  KC_HAEN: true,
+  KC_HANJ: true,
+  KC_LANG3: true,
+  KC_LANG4: true,
+  KC_LANG5: true,
+  KC_LANG6: true,
+  KC_LANG7: true,
+  KC_LANG8: true,
+  KC_LANG9: true,
+  KC_SYSREQ: true,
+  KC_CANCEL: true,
+  KC_CLEAR: true,
+  KC_PRIOR: true,
+  KC_OUT: true,
+  KC_OPER: true,
+  KC_CLEAR_AGAIN: true,
+  KC_CRSEL: true,
+  KC_EXSEL: true,
+
+  /* Modifiers */
+  KC_LCTL: true,
+  KC_LSFT: true,
+  KC_LALT: true,
+  KC_LGUI: true,
+  KC_RCTL: true,
+  KC_RSFT: true,
+  KC_RALT: true,
+  KC_RGUI: true,
+
+  /* System Control */
+  KC_PWR: true,
+  KC_SLEP: true,
+  KC_WAKE: true,
+
+  /* Media Control */
+  KC_MUTE: true,
+  KC_VOLU: true,
+  KC_VOLD: true,
+  KC_MNXT: true,
+  KC_MPRV: true,
+  KC_MSTP: true,
+  KC_MPLY: true,
+  KC_MSEL: true,
+  KC_EJCT: true,
+  KC_MAIL: true,
+  KC_CALC: true,
+  KC_MYCM: true,
+  KC_WWW_SEARCH: true,
+  KC_WWW_HOME: true,
+  KC_WWW_BACK: true,
+  KC_WWW_FORWARD: true,
+  KC_WWW_STOP: true,
+  KC_WWW_REFRESH: true,
+  KC_WWW_FAVORITES: true,
+  KC_MFFD: true,
+  KC_MRWD: true,
+};
+
+export const getAutocompleteKeycodes = () =>
+  keycodesList.filter(
+    (keycode) =>
+      !!autocompleteKeycodes[keycode.code as keyof typeof autocompleteKeycodes],
+  );
+export function isAutocompleteKeycode(keycode: string): boolean {
+  const key = keycode.toUpperCase();
+  return !!autocompleteKeycodes[key as keyof typeof autocompleteKeycodes];
+}
+
+
+// File: c:\Users\Potatox\Desktop\app\src\utils\bit-pack.ts
+// We get 32-bits to play with
+type Choice = number;
+type NumChoices = number;
+type LayoutOption = [Choice, NumChoices];
+const maxBitSize = 5;
+
+export const packBits = (nums: LayoutOption[]) =>
+  nums.reduce(
+    (p, [choice, numChoices]) => (p << minBitSize(numChoices)) | choice,
+    0,
+  ) >>> 0;
+
+export const numIntoBytes = (num32: number) =>
+  [num32 >> 24, num32 >> 16, num32 >> 8, num32].map((num) => num & 0xff);
+
+export const bytesIntoNum = (bytesArr: number[]) =>
+  ((bytesArr[0] << 24) |
+    (bytesArr[1] << 16) |
+    (bytesArr[2] << 8) |
+    bytesArr[3]) >>>
+  0;
+
+export const unpackBits = (choiceBits: number, nums: NumChoices[]): number[] =>
+  nums.reverse().reduce(
+    ({res, bits}, numChoices) => ({
+      bits: bits >> minBitSize(numChoices),
+      res: [bits & ((1 << minBitSize(numChoices)) - 1), ...res],
+    }),
+    {bits: choiceBits, res: []} as {bits: number; res: number[]},
+  ).res;
+
+const minBitSize = (num: number) =>
+  1 +
+  Array(maxBitSize)
+    .fill(0)
+    .findIndex((_, idx) => 2 << idx >= num);
+
